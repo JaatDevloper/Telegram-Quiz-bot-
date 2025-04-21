@@ -1,18 +1,47 @@
-import os
 import asyncio
+import os
+import re
 from telethon import TelegramClient, events
-from aiohttp import web
 
-# Hardcoded API credentials
-api_id = 28624690
-api_hash = "67e6593b5a9b5ab20b11ccef6700af5b"
+api_id = int(os.getenv("API_ID", "your_api_id_here"))
+api_hash = os.getenv("API_HASH", "your_api_hash_here")
+bot_username = "QuizBot"
 
-client = TelegramClient("userbot", api_id, api_hash)
+client = TelegramClient("quizuserbot", api_id, api_hash)
 
-# --- Your quiz link watcher ---
+async def process_quiz_link(link, output_file):
+    start_param = link.split("start=")[1]
+    quiz_text = ""
+
+    async with client.conversation(bot_username, timeout=120) as conv:
+        await conv.send_message(f"/start {start_param}")
+
+        for _ in range(50):
+            res = await conv.get_response()
+            if res.buttons:
+                question = res.text
+                quiz_text += f"{question}\n"
+                for row in res.buttons:
+                    for btn in row:
+                        text = btn.text.strip()
+                        mark = "✅" if "✅" in text else ""
+                        clean = re.sub("✅", "", text).strip()
+                        quiz_text += f"{clean} {mark}\n"
+                quiz_text += "\n"
+
+                try:
+                    await res.click(text="Next")
+                except:
+                    break
+            else:
+                break
+
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(quiz_text)
+
 @client.on(events.NewMessage(from_users="me", pattern="/watch"))
-async def handle_watch(event):
-    await event.respond("✅ Userbot is now watching for quiz links...")
+async def watcher(event):
+    await event.respond("✅ Watching for quiz links...")
     while True:
         try:
             if os.path.exists("userbot_inbox.txt"):
@@ -20,38 +49,12 @@ async def handle_watch(event):
                     line = f.read().strip()
                 if line:
                     link, outpath = line.split("|")
-                    await process_quiz_link(link.strip(), outpath.strip())
+                    await process_quiz_link(link, outpath)
                     os.remove("userbot_inbox.txt")
         except Exception as e:
-            print(f"[Error] {e}")
+            print(f"[error] {e}")
         await asyncio.sleep(5)
 
-# --- Dummy HTTP server to keep Koyeb alive ---
-async def handle(request):
-    return web.Response(text="Userbot is running.")
-
-async def start_server():
-    app = web.Application()
-    app.router.add_get("/", handle)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, '0.0.0.0', 8080)
-    await site.start()
-
-# --- Placeholder for actual quiz extraction ---
-async def process_quiz_link(link, output_file):
-    print(f"[INFO] Processing quiz link: {link}")
-    # Replace with actual @QuizBot parsing logic
-    with open(output_file, "w", encoding="utf-8") as f:
-        f.write("Sample quiz content with ✅ answer marking.\n")
-
-# --- Main async entry point ---
-async def main():
-    await client.start()
-    print("✅ Telethon userbot started and ready.")
-    await start_server()  # Keeps Koyeb happy
-    await client.run_until_disconnected()
-
-# Start everything
-asyncio.run(main())
-
+print("Starting Telethon client...")
+client.start()
+client.loop.run_forever()
