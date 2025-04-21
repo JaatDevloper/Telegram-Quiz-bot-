@@ -3,8 +3,8 @@ import os
 import re
 from telethon import TelegramClient, events
 
-api_id = int(os.getenv("API_ID", "your_api_id_here"))
-api_hash = os.getenv("API_HASH", "your_api_hash_here")
+api_id = int(os.getenv("API_ID", "28624690"))
+api_hash = os.getenv("API_HASH", "67e6593b5a9b5ab20b11ccef6700af5b")
 bot_username = "QuizBot"
 
 client = TelegramClient("quizuserbot", api_id, api_hash)
