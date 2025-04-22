@@ -1,0 +1,111 @@
+/* Custom styles for QuizBot Extractor */
+
+/* Highlight boxes */
+.quiz-highlight {
+    background-color: var(--bs-dark);
+    border-left: 4px solid var(--bs-primary);
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+/* Question container */
+.question-container {
+    background-color: rgba(33, 37, 41, 0.7);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Options styling */
+.option {
+    background-color: var(--bs-dark);
+    border-radius: 4px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    transition: background-color 0.3s;
+}
+
+.option:hover {
+    background-color: var(--bs-secondary);
+}
+
+.option.correct {
+    background-color: var(--bs-success);
+    color: white;
+}
+
+/* Debug info styling */
+.debug-info {
+    background-color: var(--bs-dark);
+    border: 1px solid var(--bs-gray-700);
+    border-radius: 4px;
+    padding: 15px;
+    font-family: monospace;
+    white-space: pre-wrap;
+    font-size: 0.9rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Loading indicator */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--bs-primary);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Copy button */
+.copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: var(--bs-dark);
+    border: 1px solid var(--bs-gray-600);
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.copy-btn:hover {
+    background-color: var(--bs-secondary);
+}
+
+/* URL display */
+.url-display {
+    font-family: monospace;
+    word-break: break-all;
+    background-color: var(--bs-dark);
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--bs-gray-700);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bs-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bs-secondary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-primary);
+}
