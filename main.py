@@ -1,6 +1,8 @@
+import base64
+import json
+import os
 from flask import Flask
 from telethon import TelegramClient, events
-import os
 
 # Flask app setup
 app = Flask(__name__)
@@ -10,8 +12,48 @@ API_ID = 'your_api_id'  # Replace with your actual API ID
 API_HASH = 'your_api_hash'  # Replace with your actual API HASH
 SESSION = 'quiz_userbot_session'
 
-# Initialize Telegram client
+# Initialize the Telegram client
 client = TelegramClient(SESSION, API_ID, API_HASH)
+
+def decode_param(start_param):
+    """Decodes the start param base64url to get the quiz data."""
+    try:
+        # Add padding if it's missing
+        padding = '=' * (-len(start_param) % 4)
+        start_param += padding
+        decoded = base64.urlsafe_b64decode(start_param.encode()).decode('utf-8')
+        return json.loads(decoded)  # Assuming it returns a JSON structure
+    except Exception as e:
+        print(f"Error decoding param: {e}")
+        return None
+
+async def fetch_quiz_data(url):
+    """Fetches and decodes quiz data from the URL."""
+    start_param = url.split("start=")[1]  # Extract start parameter from URL
+    quiz_data = decode_param(start_param)
+
+    if quiz_data:
+        questions = []
+        count = 1
+
+        for q in quiz_data.get("questions", []):
+            formatted = f"{count}. {q['question']}\n"
+            for i, option in enumerate(q['options']):
+                formatted += f"{chr(65 + i)}. {option['text']}"
+                if option.get("correct"):
+                    formatted += " ✅"
+                formatted += "\n"
+            questions.append(formatted)
+            count += 1
+
+        # Save to a .txt file
+        filename = "quiz_questions.txt"
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write("\n\n".join(questions))
+
+        return filename
+    else:
+        return None
 
 @app.route("/health", methods=["GET"])
 def health_check():
@@ -20,22 +62,17 @@ def health_check():
 
 @client.on(events.NewMessage(pattern=r'^/quiz\s+(https://t\.me/[\w/]+)$'))
 async def quiz_handler(event):
-    """Handle /quiz command"""
+    """Handles the /quiz command"""
     url = event.pattern_match.group(1)
     await event.reply("Fetching quiz data...")
 
-    # This is where you would add your code to fetch and process the quiz
-    # For now, it's a placeholder that just echoes the URL.
-    await event.reply(f"Quiz URL received: {url}")
+    filename = await fetch_quiz_data(url)
 
-    # Example: save the quiz questions in a .txt file (you can extend this part)
-    filename = "quiz_questions.txt"
-    with open(filename, "w", encoding="utf-8") as f:
-        f.write("Sample quiz questions\n")
-    
-    # Send the .txt file
-    await client.send_file(event.chat_id, filename, caption="Here are the quiz questions.")
-    os.remove(filename)
+    if filename:
+        await client.send_file(event.chat_id, filename, caption="Here are the quiz questions.")
+        os.remove(filename)
+    else:
+        await event.reply("Sorry, something went wrong while fetching the quiz.")
 
 @app.before_first_request
 def start_bot():
@@ -45,3 +82,7 @@ def start_bot():
 if __name__ == "__main__":
     # Run the Flask app and make sure it's accessible on all interfaces (0.0.0.0)
     app.run(debug=True, host="0.0.0.0", port=5000)
+
+    # This will run the Telethon client in the background after Flask starts
+    client.run_until_disconnected()
+    
