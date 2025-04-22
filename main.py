@@ -1,60 +1,67 @@
-import asyncio
+import base64
+import json
 import os
-import re
 from telethon import TelegramClient, events
 
-api_id = int(os.getenv("API_ID", "28624690"))
-api_hash = os.getenv("API_HASH", "67e6593b5a9b5ab20b11ccef6700af5b")
-bot_username = "QuizBot"
+API_ID = 'your_api_id'  # Add your API ID
+API_HASH = 'your_api_hash'  # Add your API HASH
+SESSION = 'quiz_userbot_session'
 
-client = TelegramClient("quizuserbot", api_id, api_hash)
+client = TelegramClient(SESSION, API_ID, API_HASH)
 
-async def process_quiz_link(link, output_file):
-    start_param = link.split("start=")[1]
-    quiz_text = ""
+def decode_param(start_param):
+    """Decodes the start param base64url to get the quiz data"""
+    try:
+        # Add padding if it's missing
+        padding = '=' * (-len(start_param) % 4)
+        start_param += padding
+        decoded = base64.urlsafe_b64decode(start_param.encode()).decode('utf-8')
+        return json.loads(decoded)  # Assuming it returns a JSON structure
+    except Exception as e:
+        print(f"Error decoding param: {e}")
+        return None
 
-    async with client.conversation(bot_username, timeout=120) as conv:
-        await conv.send_message(f"/start {start_param}")
+async def fetch_quiz_data(url):
+    """Fetches and decodes quiz data from the URL"""
+    start_param = url.split("start=")[1]  # Extract start parameter from URL
+    quiz_data = decode_param(start_param)
 
-        for _ in range(50):
-            res = await conv.get_response()
-            if res.buttons:
-                question = res.text
-                quiz_text += f"{question}\n"
-                for row in res.buttons:
-                    for btn in row:
-                        text = btn.text.strip()
-                        mark = "✅" if "✅" in text else ""
-                        clean = re.sub("✅", "", text).strip()
-                        quiz_text += f"{clean} {mark}\n"
-                quiz_text += "\n"
+    if quiz_data:
+        questions = []
+        count = 1
 
-                try:
-                    await res.click(text="Next")
-                except:
-                    break
-            else:
-                break
+        for q in quiz_data.get("questions", []):
+            formatted = f"{count}. {q['question']}\n"
+            for i, option in enumerate(q['options']):
+                formatted += f"{chr(65 + i)}. {option['text']}"
+                if option.get("correct"):
+                    formatted += " ✅"
+                formatted += "\n"
+            questions.append(formatted)
+            count += 1
 
-    with open(output_file, "w", encoding="utf-8") as f:
-        f.write(quiz_text)
+        # Save to a .txt file
+        filename = "quiz_questions.txt"
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write("\n\n".join(questions))
 
-@client.on(events.NewMessage(from_users="me", pattern="/watch"))
-async def watcher(event):
-    await event.respond("✅ Watching for quiz links...")
-    while True:
-        try:
-            if os.path.exists("userbot_inbox.txt"):
-                with open("userbot_inbox.txt", "r") as f:
-                    line = f.read().strip()
-                if line:
-                    link, outpath = line.split("|")
-                    await process_quiz_link(link, outpath)
-                    os.remove("userbot_inbox.txt")
-        except Exception as e:
-            print(f"[error] {e}")
-        await asyncio.sleep(5)
+        return filename
+    else:
+        return None
 
-print("Starting Telethon client...")
+@client.on(events.NewMessage(pattern=r'^/quiz\s+(https://t\.me/[\w/]+)$'))
+async def quiz_handler(event):
+    url = event.pattern_match.group(1)
+    await event.reply("Fetching quiz data...")
+
+    filename = await fetch_quiz_data(url)
+
+    if filename:
+        await client.send_file(event.chat_id, filename, caption="Here are the quiz questions.")
+        os.remove(filename)
+    else:
+        await event.reply("Sorry, something went wrong while fetching the quiz.")
+
 client.start()
-client.loop.run_forever()
+print("Userbot is running...")
+client.run_until_disconnected()
