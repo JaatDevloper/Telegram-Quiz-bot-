@@ -8,8 +8,8 @@ from telethon import TelegramClient, events
 app = Flask(__name__)
 
 # Your bot's Telegram client setup
-API_ID = 'your_api_id'  # Replace with your actual API ID
-API_HASH = 'your_api_hash'  # Replace with your actual API HASH
+API_ID = '28624690'  # Replace with your actual API ID
+API_HASH = '67e6593b5a9b5ab20b11ccef6700af5b'  # Replace with your actual API HASH
 SESSION = 'quiz_userbot_session'
 
 # Initialize the Telegram client
