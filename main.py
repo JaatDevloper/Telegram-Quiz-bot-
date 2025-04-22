@@ -4,6 +4,7 @@ import json
 import os
 import asyncio
 import logging
+from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, jsonify, render_template, redirect, url_for
 from threading import Thread
 from telethon import TelegramClient, events
