@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ quiz.title }} - QuizBot Extractor</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card bg-dark shadow-lg mb-4">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Quiz Results
+                        </h2>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i> Back
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="quiz-highlight mb-4">
+                            <h3 class="mb-3">{{ quiz.title }}</h3>
+                            {% if quiz.description %}
+                            <p class="lead">{{ quiz.description }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4 text-center">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary" onclick="window.print()">
+                                    <i class="fas fa-print me-2"></i>Print
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="exportQuiz('json')">
+                                    <i class="fas fa-file-code me-2"></i>Export JSON
+                                </button>
+                                <button type="button" class="btn btn-info" onclick="exportQuiz('txt')">
+                                    <i class="fas fa-file-alt me-2"></i>Export Text
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {% if quiz.questions %}
+                            <div class="questions-container">
+                                {% for question in quiz.questions %}
+                                    <div class="question-container" id="question-{{ loop.index }}">
+                                        <h4 class="mb-3">
+                                            <span class="badge bg-primary me-2">Q{{ loop.index }}</span>
+                                            {{ question.text }}
+                                        </h4>
+                                        
+                                        <div class="options-container">
+                                            {% for option in question.options %}
+                                                <div class="option {% if loop.index0 == question.correct_option %}correct{% endif %}">
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="badge {% if loop.index0 == question.correct_option %}bg-success{% else %}bg-secondary{% endif %} me-3">
+                                                            {{ ['A', 'B', 'C', 'D', 'E', 'F'][loop.index0] }}
+                                                        </span>
+                                                        <span>{{ option }}</span>
+                                                        {% if loop.index0 == question.correct_option %}
+                                                            <i class="fas fa-check-circle ms-auto text-success"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                No questions found in this quiz.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card bg-dark shadow-lg">
+                    <div class="card-header bg-secondary text-white">
+                        <h3 class="mb-0 fs-5">
+                            <i class="fas fa-code me-2"></i>
+                            Quiz Data
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="position-relative">
+                            <button class="copy-btn" onclick="copyQuizData()">
+                                <i class="fas fa-copy me-1"></i>Copy
+                            </button>
+                            <pre class="debug-info" id="quiz-data">{{ quiz | tojson(indent=2) }}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Function to copy quiz data
+        function copyQuizData() {
+            const data = document.getElementById('quiz-data').textContent;
+            navigator.clipboard.writeText(data).then(() => {
+                alert('Quiz data copied to clipboard!');
+            }, (err) => {
+                console.error('Could not copy text: ', err);
+            });
+        }
+        
+        // Function to export quiz in different formats
+        function exportQuiz(format) {
+            // Get quiz data
+            const quizData = {{ quiz | tojson }};
+            let content = '';
+            let filename = '';
+            let contentType = '';
+            
+            if (format === 'json') {
+                content = JSON.stringify(quizData, null, 2);
+                filename = 'quiz_export.json';
+                contentType = 'application/json';
+            } else if (format === 'txt') {
+                content = `${quizData.title}\n\n`;
+                
+                if (quizData.description) {
+                    content += `${quizData.description}\n\n`;
+                }
+                
+                quizData.questions.forEach((q, i) => {
+                    content += `Question ${i+1}: ${q.text}\n`;
+                    q.options.forEach((opt, j) => {
+                        const letter = ['A', 'B', 'C', 'D', 'E', 'F'][j];
+                        const correct = j === q.correct_option ? ' (CORRECT)' : '';
+                        content += `${letter}. ${opt}${correct}\n`;
+                    });
+                    content += '\n';
+                });
+                
+                filename = 'quiz_export.txt';
+                contentType = 'text/plain';
+            }
+            
+            // Create download link
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:' + contentType + ';charset=utf-8,' + encodeURIComponent(content));
+            element.setAttribute('download', filename);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+    </script>
+</body>
+</html>
