@@ -20,17 +20,19 @@ logger = logging.getLogger(__name__)
 # Flask app setup
 app = Flask(__name__)
 
-# Configure database
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("postgres://koyeb-adm:npg_AdrGeCaH91Kx@ep-green-water-a2s2rmb5.eu-central-1.pg.koyeb.app/koyebdb")
+# Configure database - Get the DATABASE_URL from environment variables
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")  # Use environment variable for database URL
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
 }
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Set up the secret key
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "quiz-extractor-secret-key")
 
 # Initialize the database
-db.init_app(app)
+db = SQLAlchemy(app)
 
 # Telegram client setup
 API_ID = int(os.getenv("API_ID", "28624690"))
