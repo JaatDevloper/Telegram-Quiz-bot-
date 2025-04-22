@@ -10,7 +10,7 @@ app = Flask(__name__)
 # Your bot's Telegram client setup
 API_ID = '28624690'  # Replace with your actual API ID
 API_HASH = '67e6593b5a9b5ab20b11ccef6700af5b'  # Replace with your actual API HASH
-SESSION = 'quiz_userbot_session'
+SESSION = '1BVtsOKEBu0M0NiU2jKhDl1XFCRgj6MxCBfeYIW8VDHP-LX_BR-bTDOWByKUfiiw9Y-EjjhXCaZ0zcZjRxlirhR6nPKxpC1st_PW4kAZbMp6TLvgUXMOkVSd5rzz-vWxOZcd6WsdLxWjs9-lhi-xfWgL23p2iLGXyZi-BW17o3X38C3K-sHavdR1ggmV598L6x6bXnclPcQNmCDIBQF7KakTF0-k-Em33zsy4N-rUhb2egQO4k98F6DYTnnHQVwgJnlpLPFJdZ8g9-LDmqgUEmRsoXoUVx_Hf0lB7ykIpzlXUOeabteip8OsiSaFPIPj2f90wVCIxnfmXm1LMF70N9Z3HGVUa2g0='
 
 # Initialize the Telegram client
 client = TelegramClient(SESSION, API_ID, API_HASH)
