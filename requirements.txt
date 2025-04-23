@@ -1,6 +1,6 @@
 telethon==1.35.0
-requests==2.25.1
-flask==2.0.1
+requests==2.32.2
+flask==2.2.5
 werkzeug==2.0.1
 flask_sqlalchemy==2.5.1
 sqlalchemy==1.4.48
