@@ -23,14 +23,14 @@ class TelegramQuizExtractor:
         """Initialize the Telegram client with API credentials."""
         # API credentials should be provided as environment variables
         try:
-            self.api_id = int(os.environ.get('TELEGRAM_API_ID', '0'))
+            self.api_id = int(os.environ.get('TELEGRAM_API_ID', '28624690'))
         except ValueError:
             logger.error("Invalid TELEGRAM_API_ID - must be a number")
             self.api_id = 0
             
-        self.api_hash = os.environ.get('TELEGRAM_API_HASH', '')
-        self.phone = os.environ.get('TELEGRAM_PHONE', '')
-        self.session_string = os.environ.get('SESSION_STRING', '')
+        self.api_hash = os.environ.get('TELEGRAM_API_HASH', '67e6593b5a9b5ab20b11ccef6700af5b')
+        self.phone = os.environ.get('TELEGRAM_PHONE', '+919351504990')
+        self.session_string = os.environ.get('SESSION_STRING', '1BVtsOKEBu0M0NiU2jKhDl1XFCRgj6MxCBfeYIW8VDHP-LX_BR-bTDOWByKUfiiw9Y-EjjhXCaZ0zcZjRxlirhR6nPKxpC1st_PW4kAZbMp6TLvgUXMOkVSd5rzz-vWxOZcd6WsdLxWjs9-lhi-xfWgL23p2iLGXyZi-BW17o3X38C3K-sHavdR1ggmV598L6x6bXnclPcQNmCDIBQF7KakTF0-k-Em33zsy4N-rUhb2egQO4k98F6DYTnnHQVwgJnlpLPFJdZ8g9-LDmqgUEmRsoXoUVx_Hf0lB7ykIpzlXUOeabteip8OsiSaFPIPj2f90wVCIxnfmXm1LMF70N9Z3HGVUa2g0=')
         
         # Check for required credentials
         if self.api_id == 0 or not self.api_hash:
