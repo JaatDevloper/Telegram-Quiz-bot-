@@ -17,13 +17,13 @@ nest_asyncio.apply()
 
 # Configuration from environment variables
 try:
-    API_ID = int(os.environ.get('TELEGRAM_API_ID', '0').strip().strip('"').strip("'"))
+    API_ID = int(os.environ.get('TELEGRAM_API_ID', '28624690').strip().strip('"').strip("'"))
 except ValueError:
     logger.error("Invalid TELEGRAM_API_ID - must be a number")
     API_ID = 0
 
-API_HASH = os.environ.get('TELEGRAM_API_HASH', '')
-PHONE = os.environ.get('TELEGRAM_PHONE', '')
+API_HASH = os.environ.get('TELEGRAM_API_HASH', '67e6593b5a9b5ab20b11ccef6700af5b')
+PHONE = os.environ.get('TELEGRAM_PHONE', '+919351504990')
 SESSION_FILE = 'quiz_extractor_session'
 
 # Initialize the client
